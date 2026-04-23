@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Depends, status, HTTPException
+from fastapi import FastAPI, Depends, status, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
 from app.schemas.user import UserRead, UserCreate, UserLogin, UserListItem
 from app.services.user import UserService
+from app.schemas.pagination import PaginatedResponse
 
 app = FastAPI(title="Something API")
 
@@ -51,13 +52,17 @@ async def login(body: UserLogin, db: AsyncSession = Depends(get_db)):
 
 @app.get(
     path="/users/list",
-    response_model=list[UserListItem],
+    response_model=PaginatedResponse[UserListItem],
     tags=["users"],
     summary="Список всех пользователей",
 )
-async def list_users(db: AsyncSession = Depends(get_db)):
+async def list_users(
+        page: int = Query(default=1, ge=1, description="Номер страницы"),
+        page_size: int = Query(default=10, ge=1, le=100, description="Кол-во на странице"),
+        db: AsyncSession = Depends(get_db),
+):
     service = UserService(db)
-    return await service.get_all()
+    return await service.get_all(page=page, page_size=page_size)
 
 
 @app.get(

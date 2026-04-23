@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
@@ -27,9 +27,16 @@ class UserRepository:
         )
         return result.scalar_one_or_none()
 
-    async def get_all(self) -> list[User]:
-        result = await self.session.execute(select(User))
-        return list(result.scalars().all())
+    async def get_all(self, page: int, page_size: int) -> tuple[list[User], int]:
+        offset = (page - 1) * page_size
+
+        count_result = await self.session.execute(select(func.count()).select_from(User))
+        total = count_result.scalar_one()
+
+        result = await self.session.execute(
+            select(User).offset(offset).limit(page_size)
+        )
+        return list(result.scalars().all()), total
 
     async def create(self, username: str, email: str, password: str):
         hashed_password = PasswordService.hash(password)
