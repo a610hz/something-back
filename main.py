@@ -86,7 +86,7 @@ async def main(request: Request):
     response_model=UserRead,
     status_code=status.HTTP_201_CREATED,
     tags=["auth"],
-    summary="Registration of new user",
+    summary="Регистрация нового пользователя",
 )
 @limiter.limit("5/minute")
 async def register(
