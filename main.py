@@ -1,6 +1,6 @@
 import os
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from slowapi import _rate_limit_exceeded_handler
@@ -43,9 +43,17 @@ async def ignore_favicon(request: Request, call_next):
     return await call_next(request)
 
 
-# @app.get("/faivicon.ico", include_in_schema=False)
-# async def favicon():
-#     return Response(status_code=204)
+@app.websocket("/ws")
+async def websocket_endpoint(ws: WebSocket):
+    await ws.accept()
+
+    try:
+        while True:
+            data = await ws.receive_json()
+            data["username"] = str(data["username"]).capitalize()
+            await ws.send_json(data)
+    except WebSocketDisconnect:
+        print("Client disconnected")
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -71,7 +79,7 @@ async def main(request: Request):
             }
         </style>
         <body>
-            <h1>Hello Bitchass</h1>
+            <h1>Someting Back</h1>
         </body>
     </html>
     """

@@ -1,8 +1,15 @@
-from fastapi import APIRouter, Depends, status, HTTPException, Query, Request
+from fastapi import (
+    Query,
+    status,
+    Depends,
+    Request,
+    APIRouter,
+    HTTPException,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
-from app.schemas.user import UserRead, UserCreate, UserLogin, UserListItem
+from app.schemas.user import UserRead, UserLogin, UserCreate, UserListItem
 from app.services.user import UserService
 from app.schemas.pagination import PaginatedResponse
 from app.core.limiter import limiter
